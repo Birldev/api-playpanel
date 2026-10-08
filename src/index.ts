@@ -14,6 +14,7 @@ import { envParsed } from "./config/env";
 import { logger } from "./utils/logger";
 import { setupProcessLifecycle } from "./config/process";
 import { playpanelRoutes } from "./routes/playpanel.routes";
+import { playpanelResellerRoutes } from "./routes/playpanel.reseller.routes";
 
 const app = fastify({ requestTimeout: 60000 }).withTypeProvider<ZodTypeProvider>();
 setupProcessLifecycle(app);
@@ -74,6 +75,11 @@ app.get("/", async (req, res) => {
 app.register(playpanelRoutes);
 app.register(playpanelRoutes, { prefix: "/playpanel" });
 app.register(playpanelRoutes, { prefix: "/central" });
+
+// Rotas do sistema de revenda (reseller)
+app.register(playpanelResellerRoutes, { prefix: "/reseller" });
+app.register(playpanelResellerRoutes, { prefix: "/centralreseller" });
+app.register(playpanelResellerRoutes, { prefix: "/playpanel/reseller" });
 
 app.setErrorHandler((error, request, reply) => {
   if (error.validation) {

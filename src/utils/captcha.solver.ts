@@ -5,7 +5,7 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export class CaptchaSolver {
   /**
-   * Resolve o Google reCAPTCHA v2 usando CapMonster como preferencial e 2Captcha como fallback
+   * Resolve Cloudflare Turnstile ou Google reCAPTCHA v2 usando CapMonster como preferencial e 2Captcha como fallback
    */
   static async solveRecaptchaV2(
     websiteURL: string = envParsed.PLAYPANEL_PANEL_URL,
@@ -13,7 +13,7 @@ export class CaptchaSolver {
   ): Promise<string> {
     try {
       if (envParsed.CAPMONSTER_KEY && envParsed.CAPMONSTER_KEY.trim()) {
-        logger.info("Iniciando resolução do reCAPTCHA v2 via CapMonster...");
+        logger.info(`Iniciando resolução de captcha via CapMonster (Sitekey: ${websiteKey})...`);
         const token = await this.solveWithCapMonster(websiteURL, websiteKey);
         if (token) return token;
       }
@@ -22,7 +22,7 @@ export class CaptchaSolver {
     }
 
     if (envParsed.CAPTCHA2_API_KEY && envParsed.CAPTCHA2_API_KEY.trim()) {
-      logger.info("Iniciando resolução do reCAPTCHA v2 via 2Captcha (fallback)...");
+      logger.info(`Iniciando resolução de captcha via 2Captcha (fallback)...`);
       return await this.solveWith2Captcha(websiteURL, websiteKey);
     }
 
@@ -31,10 +31,13 @@ export class CaptchaSolver {
 
   private static async solveWithCapMonster(websiteURL: string, websiteKey: string): Promise<string> {
     const clientKey = envParsed.CAPMONSTER_KEY;
+    const isTurnstile = websiteKey.startsWith("0x4");
+    const taskType = isTurnstile ? "TurnstileTaskProxyless" : "NoCaptchaTaskProxyless";
+
     const body = {
       clientKey,
       task: {
-        type: "NoCaptchaTaskProxyless",
+        type: taskType,
         websiteURL,
         websiteKey,
       },
@@ -52,7 +55,7 @@ export class CaptchaSolver {
     }
 
     const taskId = createJson.taskId;
-    logger.info(`CapMonster Task ID criado: ${taskId}. Aguardando solução...`);
+    logger.info(`CapMonster Task ID criado: ${taskId} (${taskType}). Aguardando solução...`);
 
     for (let attempt = 1; attempt <= 30; attempt++) {
       await delay(2500);
@@ -64,8 +67,8 @@ export class CaptchaSolver {
       const resultJson: any = await resultRes.json();
 
       if (resultJson.status === "ready") {
-        logger.info("CapMonster reCAPTCHA v2 resolvido com sucesso!");
-        return resultJson.solution.gRecaptchaResponse;
+        logger.info("CapMonster captcha resolvido com sucesso!");
+        return resultJson.solution.token || resultJson.solution.gRecaptchaResponse;
       }
 
       if (resultJson.errorId !== 0) {
@@ -78,17 +81,22 @@ export class CaptchaSolver {
 
   private static async solveWith2Captcha(websiteURL: string, websiteKey: string): Promise<string> {
     const clientKey = envParsed.CAPTCHA2_API_KEY;
+    const isTurnstile = websiteKey.startsWith("0x4");
+    const taskType = isTurnstile ? "TurnstileTaskProxyless" : "RecaptchaV2TaskProxyless";
+
+    const body = {
+      clientKey,
+      task: {
+        type: taskType,
+        websiteURL,
+        websiteKey,
+      },
+    };
+
     const createRes = await fetch("https://api.2captcha.com/createTask", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        clientKey,
-        task: {
-          type: "RecaptchaV2TaskProxyless",
-          websiteURL,
-          websiteKey,
-        },
-      }),
+      body: JSON.stringify(body),
     });
 
     const createJson: any = await createRes.json();
@@ -97,7 +105,7 @@ export class CaptchaSolver {
     }
 
     const taskId = createJson.taskId;
-    logger.info(`2Captcha Task ID criado: ${taskId}. Aguardando solução...`);
+    logger.info(`2Captcha Task ID criado: ${taskId} (${taskType}). Aguardando solução...`);
 
     for (let attempt = 1; attempt <= 30; attempt++) {
       await delay(2500);
@@ -109,8 +117,8 @@ export class CaptchaSolver {
       const resultJson: any = await resultRes.json();
 
       if (resultJson.status === "ready") {
-        logger.info("2Captcha reCAPTCHA v2 resolvido com sucesso!");
-        return resultJson.solution.gRecaptchaResponse;
+        logger.info("2Captcha captcha resolvido com sucesso!");
+        return resultJson.solution.token || resultJson.solution.gRecaptchaResponse;
       }
 
       if (resultJson.errorId !== 0) {

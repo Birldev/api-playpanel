@@ -194,6 +194,7 @@ export class PlayPanelLoginService {
       params.append("username", panelUser);
       params.append("password", panelPass);
       params.append("g-recaptcha-response", recaptchaResponse);
+      params.append("cf-turnstile-response", recaptchaResponse);
 
       const loginUrl = new URL("login", envParsed.PLAYPANEL_URL).toString();
       logger.info(`Submetendo credenciais para ${loginUrl}...`);

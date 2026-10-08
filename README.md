@@ -389,27 +389,119 @@ Retorna a relação completa de usuários, com opções de filtros de status e t
 
 ---
 
+### 7. Sistema de Revendas e Sub-Revendas (`/reseller` e `/centralreseller`)
+
+Módulo completo para controle e gestão de sub-revendedores, correspondente às regras e contratos do **Central Reseller**:
+
+* **Método**: `GET` (todas as operações de revenda disponíveis em GET)
+* **Rotas**: Prefixadas com `/reseller`, `/centralreseller` ou `/playpanel/reseller`
+
+#### 7.1 Localizar Revendedor (`/reseller/find`)
+* **URL**: `/reseller/find` ou `/centralreseller/find`
+* **Query Parameters**:
+  * `search`: Nome de usuário, ID ou e-mail do revendedor
+  * `panelUser`, `panelPass`: Credenciais opcionais
+* **Exemplo de Retorno**:
+```json
+{
+  "status": 200,
+  "sucess": true,
+  "success": true,
+  "data": {
+    "id": "1840",
+    "username": "revenda_joao",
+    "owner_id": "Marcelo15",
+    "email": "joao@email.com",
+    "status": "1",
+    "status_desc": "Ativo",
+    "credits": 25,
+    "created_at": "05/09/2026 14:22:10",
+    "last_login": "08/10/2026 09:15:00"
+  }
+}
+```
+
+#### 7.2 Listar Todos os Revendedores (`/reseller/findAll`)
+* **URL**: `/reseller/findAll`, `/reseller/find-all` ou `/centralreseller/findAll`
+* **Query Parameters**:
+  * `start`: Índice inicial (padrão `0`)
+  * `length`: Quantidade por página (padrão `100`)
+* **Exemplo de Retorno**:
+```json
+{
+  "status": 200,
+  "sucess": true,
+  "success": true,
+  "total": 12,
+  "data": [
+    {
+      "id": "1840",
+      "username": "revenda_joao",
+      "owner_id": "Marcelo15",
+      "status": "1",
+      "credits": 25
+    }
+  ]
+}
+```
+
+#### 7.3 Buscar por Master / Hierarquia (`/reseller/findByMaster`)
+* **URL**: `/reseller/findByMaster` ou `/centralreseller/findByMaster`
+* **Query Parameters**:
+  * `masterId`: ID do master para inspeção de hierarquia
+  * `search`: Filtro opcional por nome
+
+#### 7.4 Adicionar Créditos ao Revendedor (`/reseller/updateCredits`)
+* **URL**: `/reseller/updateCredits` ou `/centralreseller/updateCredits`
+* **Método**: `GET` (e compatibilidade adicional via `POST`)
+* **Query Parameters**:
+  * `idcentral` ou `id`: ID numérico do revendedor
+  * `creditos` ou `amount`: Quantidade de créditos a recarregar
+  * `reason`: Motivo da recarga (opcional)
+* **Proteção Anti-Duplicação**: Possui trava idêntica ao `checkAlreadyInsertedCredits(id, 'central-revenda')` do Central, bloqueando requisições duplicadas dentro da janela de cooldown com a mensagem `"Credits already inserted"`.
+* **Exemplo de Retorno**:
+```json
+{
+  "status": 200,
+  "sucess": true,
+  "success": true,
+  "message": "Créditos atualizados com sucesso, quantidade adicionada: 10",
+  "data": {
+    "credits": 35
+  }
+}
+```
+
+---
+
 ## 🔄 Mapeamento e Migração no n8n
 
 Para migrar qualquer workflow do n8n para a **Api Play Panel**, basta atualizar o campo **URL** dos nós HTTP Request:
 
-| Operação / Fluxo | URL Anterior | Nova URL Api Play Panel | Método |
+| Operação / Fluxo | URL Anterior Central | Nova URL Api Play Panel | Método |
 | :--- | :--- | :--- | :---: |
-| **Localizar Cliente** | `https://api-antiga.../find` | `https://api-playpanel.../find` | `GET` |
-| **Renovar Cliente** | `https://api-antiga.../renew` | `https://api-playpanel.../renew` | `GET` |
-| **Criar Teste Rápido** | `https://api-antiga.../create-test-user` | `https://api-playpanel.../create-test-user` | `GET` |
-| **Listar Todos** | `https://api-antiga.../find-all` | `https://api-playpanel.../find-all` | `GET` |
-| **Consultar Saldo** | `https://api-antiga.../stats` | `https://api-playpanel.../stats` | `GET` |
-
-> 💡 **Compatibilidade Transparente**: Nenhuma expressão ou código JavaScript nos nós subsequentes (`IF`, `Code`, `Set`, `Telegram`, `WhatsApp`) precisa ser alterada. Os campos `data.id`, `data.result.id`, `exp_date_local` e `data[0].id` permanecem idênticos.
+| **Localizar Cliente** | `/central/find` | `/find` ou `/playpanel/find` | `GET` |
+| **Renovar Cliente** | `/central/renew` | `/renew` ou `/playpanel/renew` | `GET` |
+| **Criar Teste Rápido** | `/central/create-test-user` | `/create-test-user` | `GET` |
+| **Listar Todos** | `/central/find-all` | `/find-all` ou `/findAll` | `GET` |
+| **Consultar Saldo** | `/central/stats` | `/stats` | `GET` |
+| **Localizar Revendedor** | `/centralreseller/find` | `/reseller/find` | `GET` |
+| **Listar Revendedores** | `/centralreseller/findAll` | `/reseller/findAll` | `GET` |
+| **Recarga de Revenda** | `/centralreseller/updateCredits` | `/reseller/updateCredits` | `GET` |
 
 ---
 
-## 🛡️ Mecanismos de Segurança e Defesa
+## 🛡️ Camadas Defensivas e Comparação com a API Central
 
-1. **Auto-Healing de Sessão**: Se o Play Panel invalidar o token de sessão, a API intercepta automaticamente o status 401 ou resposta de sessão expirada, realiza novo login com resolução de captcha e repete a requisição de forma transparente.
-2. **Double-Renewal Protection**: Bloqueia chamadas concorrentes simultâneas e impõe cooldown de 60 segundos por cliente na memória e no Redis, impedindo consumo indevido de créditos por duplo clique.
-3. **Fallback Duplo de Captcha**: Utiliza **CapMonster** como resolvedor de reCAPTCHA v2 de alta velocidade, alternando para o **2Captcha** automaticamente caso haja fila ou indisponibilidade.
-4. **Anti-Hammering em Listagens**: Cooldown de 15 segundos configurável para evitar sobrecarga no servidor do painel.
-5. **Proteção Contra Bloqueio de Credenciais**: Bloqueio temporário de 5 minutos para tentativas consecutivas com senha inválida, prevenindo banimento da conta do revendedor.
-6. **Conexão Direta Sem Proxy**: Execução com baixa latência e total confiabilidade de rede.
+Todas as camadas defensivas presentes na API Central e na Easyplay API foram implementadas e preservadas rigorosamente:
+
+| Camada Defensiva | Implementação no Central | Implementação na Api Play Panel |
+| :--- | :--- | :--- |
+| **Trava de Renovação Dupla (Clientes)** | `checkAlreadyInsertedCredits` (Central) | `RenewLock` com mutex in-flight e cooldown de 60s por ID |
+| **Trava de Recarga Dupla (Revenda)** | `checkAlreadyInsertedCredits` ('central-revenda') | `RenewLock` chave `reseller_credit_${id}` com retorno `"Credits already inserted"` |
+| **Anti-Hammering de Listagens** | `checkAlreadyFindAll` (Central) | `FindAllLock` com fila concorrente e cooldown de 15s |
+| **Auto-Healing de Sessão** | Retry em caso de HTTP 401 (`fetch.service.ts`) | Intercepta 401 e sessão expirada, renova token e repete a chamada transparente |
+| **Resolução de Captcha** | 2Captcha e CapMonster (Turnstile / Recaptcha) | `CaptchaSolver` dinâmico (Turnstile `0x4...` e reCAPTCHA v2) com CapMonster + 2Captcha |
+| **Proteção de Força Bruta** | Bloqueio temporário em memória (`blockedUsers`) | Bloqueio de 5 minutos por tentativas consecutivas com credenciais erradas |
+| **Conexão Direta** | Impit / Fetch sem proxy | Conexão HTTP nativa e direta sem proxy para máxima velocidade |
+
