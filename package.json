@@ -1,0 +1,35 @@
+{
+  "name": "api-play-panel",
+  "version": "1.0.0",
+  "description": "API de automação e integração para o painel Play Panel",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -b",
+    "start": "node ./dist/index.js",
+    "start:dev": "tsx src/index.ts"
+  },
+  "keywords": [
+    "playpanel",
+    "play-panel",
+    "api",
+    "fastify"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@fastify/cors": "^9.0.1",
+    "@fastify/swagger": "^8.15.0",
+    "@scalar/fastify-api-reference": "^1.25.111",
+    "dotenv": "^18.0.2",
+    "fastify": "^4.28.1",
+    "fastify-type-provider-zod": "^2.0.0",
+    "redis": "^4.7.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "tsx": "^3.14.0",
+    "typescript": "^5.8.2"
+  }
+}

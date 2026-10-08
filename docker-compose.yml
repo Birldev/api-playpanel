@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  playpanel-api:
+    build: .
+    container_name: playpanel-api
+    restart: unless-stopped
+    ports:
+      - "3004:3004"
+    env_file:
+      - .env
