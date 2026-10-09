@@ -73,24 +73,26 @@ Os endpoints aparecem em três grupos, nesta ordem:
 
 ## Rotas de clientes e administração
 
-Todas as rotas abaixo usam exclusivamente o prefixo `/playpanel`. Por exemplo: `/playpanel/find` e `/playpanel/pacotes`. Os caminhos sem prefixo não estão disponíveis.
+Todas as rotas abaixo usam exclusivamente o prefixo `/playpanel`. Por exemplo: `/playpanel/find` e `/playpanel/pacotes`. Os caminhos de negócio sem prefixo não estão disponíveis. Os antigos aliases `/findAll` de clientes, `/find-all` de revendas e GET de `/playpanelreseller/updateCredits` foram removidos e retornam HTTP 404.
 
 Todas exigem `panelUser`, `panelPass` e API key. Os parâmetros adicionais também são enviados na query string.
 
-| Rota | Método | Parâmetros adicionais | Comportamento |
+| Caminho completo | Método | Parâmetros adicionais | Comportamento |
 | --- | --- | --- | --- |
-| `/login` | GET | `forceNewLogin` opcional | Retorna token e dados da sessão; `true` força novo login |
-| `/stats` | GET | Nenhum | Encaminha a resposta de estatísticas do painel |
-| `/find` | GET | `username` obrigatório | Busca um cliente oficial pelo nome de usuário; não retorna testes |
-| `/find-all` | GET | `teste`, `filtro`, `tipo`, `cooldown` opcionais | Lista clientes com filtros |
-| `/pacotes` | GET | Nenhum | Retorna bouquets como objetos com `id` e `name` |
-| `/create-test-user` | GET | `plano`, `horas`, `username`, `password` opcionais | Cria um teste |
-| `/renew` | GET | `id` ou `username`; `months`, `force`, `cooldown` opcionais | Renova um cliente |
-| `/toggle-status` | GET | `id` ou `username` | Alterna bloqueio/desbloqueio |
-| `/delete` | GET | `id` ou `username` | Exclui um cliente |
-| `/delete-expired` | GET | `testes`, `tipo` opcionais | Exclui expirados em lote |
-| `/logs/creditos` | GET | `id`, `start`, `length` opcionais | Consulta o extrato de créditos |
-| `/alterar-senha` | GET | `oldPassword`, `newPassword`, `confirmPassword` obrigatórios | Altera a senha da conta no painel |
+| `/playpanel/login` | GET | `forceNewLogin` opcional | Retorna token e dados da sessão; `true` força novo login |
+| `/playpanel/stats` | GET | Nenhum | Encaminha a resposta de estatísticas do painel |
+| `/playpanel/find` | GET | `username` obrigatório | Busca um cliente oficial pelo nome de usuário; não retorna testes |
+| `/playpanel/find-all` | GET | `teste`, `filtro`, `tipo`, `cooldown` opcionais | Lista clientes com filtros |
+| `/playpanel/pacotes` | GET | Nenhum | Retorna bouquets como objetos com `id` e `name` |
+| `/playpanel/create-test-user` | GET | `plano`, `horas`, `username`, `password` opcionais | Cria um teste |
+| `/playpanel/renew` | GET | `id` ou `username`; `months`, `force`, `cooldown` opcionais | Renova um cliente |
+| `/playpanel/toggle-status` | GET | `id` ou `username` | Alterna bloqueio/desbloqueio |
+| `/playpanel/delete` | GET | `id` ou `username` | Exclui um cliente |
+| `/playpanel/delete-expired` | GET | `testes`, `tipo` opcionais | Exclui expirados em lote |
+| `/playpanel/logs/creditos` | GET | `id`, `start`, `length` opcionais | Consulta o extrato de créditos |
+| `/playpanel/alterar-senha` | GET | `oldPassword`, `newPassword`, `confirmPassword` obrigatórios | Altera a senha da conta no painel |
+
+A rota pública `GET /` informa `service`, `status` e `date` e aparece em `Outros`. O OpenAPI está disponível em `/reference/openapi.json`.
 
 ### Criação de teste
 
@@ -100,15 +102,19 @@ Na resposta de sucesso, os dados são expostos na raiz e em `data.result`, inclu
 
 ### Consulta e listagem
 
-`/find` retorna apenas clientes oficiais (`is_trial=0`) em `data`. Contas de teste (`is_trial=1`) não são retornadas; se somente um teste corresponder ao username, a resposta é HTTP 404. Datas formatadas incluem `exp_date_local` no formato `DD/MM/YYYY`; não há campo `vencimento` criado por este serviço. `master_username` deriva de `member_id` e `as_number` é uma string vazia.
+`/playpanel/find` retorna apenas clientes oficiais (campo `is_trial=0` no backend, `is_trial: false` na resposta) em `data`. A busca compara o username completo sem diferenciar maiúsculas de minúsculas, primeiro nas listas próprias e depois na lista geral. Contas de teste (`is_trial=1` no backend) não são retornadas; se somente um teste corresponder ao username, a resposta é HTTP 404. Datas formatadas incluem `exp_date_local` no formato `DD/MM/YYYY`; não há campo `vencimento` criado por este serviço. `master_username` deriva de `member_id` e `as_number` é uma string vazia.
 
-Em `/find-all`, `filtro` aceita `todas` (padrão), `ativa` ou `expirada`. `tipo` aceita `minhas` (padrão), `revendas` ou `todas`. `teste=true` seleciona testes, `teste=false` seleciona clientes oficiais, e a ausência desse parâmetro não filtra por teste. `cooldown` tem padrão de 15 segundos. A resposta contém `total` e `data`.
+Em `/playpanel/find-all`, `filtro` aceita `todas` (padrão), `ativa` ou `expirada`. `tipo` aceita `minhas` (padrão), `revendas` ou `todas`. `teste=true` seleciona testes, `teste=false` seleciona clientes oficiais, e a ausência desse parâmetro não filtra por teste. `cooldown` tem padrão de 15 segundos. A resposta contém `total` e `data`: `total` é a quantidade efetivamente retornada após o filtro, e não o total de registros existentes no painel. Chamadas bloqueadas pelo cooldown retornam HTTP 400, inclusive quando alteram os filtros da mesma conta.
 
 A implementação solicita até 1.000 registros em uma única página. A listagem não garante recuperar todos os clientes de contas maiores, e `/find` também depende desse limite por lista consultada.
+
+Os campos `exp_date` e `created_at` são timestamps Unix em segundos; os campos com sufixo `_iso` usam UTC. Datas e horários com sufixo `_local` usam `America/Sao_Paulo`. As respostas de consulta incluem a senha do cliente e links de reprodução; trate esse conteúdo como confidencial.
 
 ### Renovação
 
 Informe `id`, ou use `username` para localizar o ID. Se ID e username forem enviados juntos, o ID determina o alvo da renovação. `months` aceita valores entre 1 e 12, com padrão 1; o serviço envia `tempo` ao backend. `cooldown` aceita de 5 a 600 segundos, com padrão 60. `force=true` ignora as verificações da trava, inclusive a de operação em andamento.
+
+A renovação aceita testes pela busca interna, embora `/playpanel/find` retorne somente clientes oficiais. No teste real realizado, uma renovação de um mês converteu o teste em cliente oficial (`is_trial: false`). A aprovação e o vencimento final são definidos pelo painel.
 
 O retorno de sucesso inclui `message` e pode incluir `data` com o cliente atualizado. Workflows que comparam vencimentos devem verificar a existência de `data` antes de acessá-lo.
 
@@ -116,18 +122,18 @@ O retorno de sucesso inclui `message` e pode incluir `data` com o cliente atuali
 
 Use exclusivamente o prefixo `/playpanelreseller`, por exemplo `/playpanelreseller/find`. Todas as rotas exigem as mesmas credenciais por chamada e API key.
 
-| Sufixo | Método | Parâmetros adicionais |
+| Caminho completo | Método | Parâmetros adicionais |
 | --- | --- | --- |
-| `/find` | GET | `search` obrigatório: ID, username ou e-mail |
-| `/findAll` | GET | `start` padrão 0; `length` padrão 100 |
-| `/findByMaster` | GET | `masterId` e `search` opcionais |
-| `/updateCredits` | POST | `id` e `amount` obrigatórios; `reason` opcional |
+| `/playpanelreseller/find` | GET | `search` obrigatório: ID, username ou e-mail |
+| `/playpanelreseller/findAll` | GET | `start` padrão 0; `length` padrão 100 |
+| `/playpanelreseller/findByMaster` | GET | `masterId` e `search` opcionais |
+| `/playpanelreseller/updateCredits` | POST | `id` e `amount` obrigatórios; `reason` opcional |
 
 No POST de `/playpanelreseller/updateCredits`, os parâmetros são enviados na query string. A recarga utiliza cooldown de 60 segundos e pode retornar `Credits already inserted` quando bloqueada.
 
 O backend é definido por `PLAYPANEL_URL`, sem seleção de destino por requisição.
 
-`/findByMaster` tenta a rota de hierarquia quando recebe `masterId`. Se essa chamada lançar erro, recorre à listagem de revendedores próprios e aplica `search`, quando presente. Esse fallback não filtra automaticamente por `masterId`.
+`/findByMaster` tenta a rota de hierarquia quando recebe `masterId`. Se essa chamada lançar erro, recorre à listagem de revendedores próprios e aplica `search`, quando presente. Esse fallback não filtra automaticamente por `masterId`. Quando a rota de hierarquia responde com sucesso, o parâmetro `search` não é aplicado.
 
 ## Contratos de entrada e resposta
 
@@ -135,13 +141,15 @@ As requisições aceitam somente os parâmetros documentados. Parâmetros descon
 
 Os IDs devem conter apenas dígitos. Paginação exige `start` inteiro não negativo e `length` inteiro entre 1 e 1.000. `horas` e `months` são inteiros nos intervalos documentados. `cooldown` da listagem aceita de 1 a 600 segundos. `amount` deve ser finito e maior que zero. Booleanos aceitam `true`, `false`, `1` e `0`.
 
-Respostas usam `success` para indicar sucesso. Clientes ficam em `data`; testes incluem `data.result`. Campos opcionais de respostas dependem do backend.
+As respostas padronizadas de clientes e revendedores usam `success` para indicar sucesso. Clientes ficam em `data`; a criação de teste inclui `data.result`. `/playpanel/stats` repassa o JSON do painel. Campos opcionais dependem do backend; nem toda resposta usa o mesmo envelope.
+
+O Reference declara as três formas alternativas de API key e documenta respostas JSON sem alterar a serialização em execução. Os corpos são descritos como objetos abertos, pois o backend pode fornecer campos adicionais. HTTP 200, por si só, não garante sucesso de negócio: confira `success` ou o indicador do backend nas respostas repassadas.
 
 ## Sessões e limites dos controles atuais
 
 O cache usa memória e, quando disponível, Redis, com validade local de quatro horas. Em HTTP 401 ou mensagem reconhecida de sessão expirada, o serviço tenta novo login e repete a chamada uma vez.
 
-As travas de renovação e recarga usam bloqueio local em andamento e registro de cooldown no Redis após sucesso. Não constituem um lock distribuído atômico nem garantem idempotência financeira. A listagem também possui bloqueio local e cooldown; isso não substitui limitação geral de requisições.
+As travas de renovação e recarga usam bloqueio local em andamento e registro de cooldown em memória e, quando disponível, no Redis após sucesso. Não constituem um lock distribuído atômico nem garantem idempotência financeira. A listagem também possui bloqueio local e cooldown; isso não substitui limitação geral de requisições.
 
 O bloqueio temporário de login ocorre quando a mensagem do backend contém `inválido`, por cinco minutos e por combinação de credenciais em memória. Não é uma proteção geral contra força bruta.
 
@@ -155,4 +163,8 @@ As operações de alteração continuam disponíveis em GET. Use HTTPS e evite a
 npm test
 ```
 
-O comando compila o projeto e verifica a obrigatoriedade das credenciais nos schemas, a rejeição HTTP de valores ausentes/vazios e o encaminhamento dos valores recebidos na chamada. As verificações usam chamadas locais e transporte simulado, sem autenticar em um painel real.
+O comando compila o projeto e verifica credenciais obrigatórias, validação de parâmetros, encaminhamento aos serviços, respostas padronizadas, contratos OpenAPI, remoção de aliases e exclusão de testes em `/find`, preservando a busca interna para gerenciamento. As verificações usam chamadas locais e transporte simulado, sem autenticar em um painel real.
+
+Também foram executadas chamadas reais pelo Reference para login, pacotes, criação de teste, renovação, `/find` e `/find-all`. A consulta após a renovação retornou o cliente oficial com o novo vencimento; a listagem com `teste=false` retornou 125 clientes sem testes. Esses números registram a validação realizada, não valores fixos ou garantidos pela API. Credenciais, chaves e dados reais de clientes não devem ser incluídos nos exemplos versionados.
+
+Para repetir a consulta no Reference, abra `playpanel`, informe `panelUser` e `panelPass`, configure uma das alternativas de API key e envie `/playpanel/find` com um username conhecido. Em `/playpanel/find-all`, use `teste=false`, `filtro=todas` e `tipo=minhas` para consultar clientes oficiais próprios. Aguarde o cooldown antes de repetir a listagem. Um túnel temporário depende da aplicação e do processo de túnel ativos e não é uma URL de produção.

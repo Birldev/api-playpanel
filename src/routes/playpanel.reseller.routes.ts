@@ -17,7 +17,7 @@ export const playpanelResellerRoutes: FastifyPluginAsyncZod = async (app) => {
     {
       schema: {
         tags: ["playpanelReseller"],
-        description: "Localiza um revendedor por ID ou username",
+        description: "Localiza um revendedor pelo ID, username ou e-mail completo nas primeiras 1.000 revendas próprias.",
         querystring: queryFindResellerSchema,
       },
     },
@@ -44,7 +44,7 @@ export const playpanelResellerRoutes: FastifyPluginAsyncZod = async (app) => {
     {
       schema: {
         tags: ["playpanelReseller"],
-        description: "Consulta revendedores vinculados a uma conta master específica",
+        description: "Consulta a hierarquia quando masterId é informado. Em falha ou ausência de masterId, lista revendas próprias e aplica search; esse fallback não filtra por masterId. search não é aplicado quando a consulta de hierarquia tem sucesso.",
         querystring: queryFindByMasterSchema,
       },
     },
@@ -59,7 +59,7 @@ export const playpanelResellerRoutes: FastifyPluginAsyncZod = async (app) => {
     {
       schema: {
         tags: ["playpanelReseller"],
-        description: "Adiciona créditos a um revendedor via POST com trava anti-duplicidade",
+        description: "Adiciona créditos via POST com parâmetros na query string: id e amount positivo são obrigatórios. Usa cooldown de 60 segundos e retorna HTTP 400 em bloqueio por duplicidade e HTTP 404 nas demais falhas de negócio.",
         querystring: queryUpdateResellerCreditsSchema,
       },
     },

@@ -11,6 +11,7 @@ import {
   type ZodTypeProvider,
 } from "fastify-type-provider-zod";
 import { envParsed } from "./config/env";
+import { documentResponses } from "./config/openapi";
 import { logger } from "./utils/logger";
 import { setupProcessLifecycle } from "./config/process";
 import { playpanelRoutes } from "./routes/playpanel.routes";
@@ -30,6 +31,12 @@ app.register(cors, {
 app.register(FastifySwagger, {
   openapi: {
     tags: [{ name: "playpanel" }, { name: "playpanelReseller" }, { name: "Outros" }],
+    components: { securitySchemes: {
+      ApiKeyHeader: { type: "apiKey", in: "header", name: "apikey" },
+      XApiKeyHeader: { type: "apiKey", in: "header", name: "x-api-key" },
+      ApiKeyQuery: { type: "apiKey", in: "query", name: "apikey" },
+    } },
+    security: [{ ApiKeyHeader: [] }, { XApiKeyHeader: [] }, { ApiKeyQuery: [] }],
     info: {
       title: "Api Play Panel",
       description: "API de automação e integração completa para o servidor Play Panel",
@@ -37,6 +44,9 @@ app.register(FastifySwagger, {
     },
   },
   transform: jsonSchemaTransform,
+  transformObject: (document) => "openapiObject" in document
+    ? documentResponses(document.openapiObject as Parameters<typeof documentResponses>[0])
+    : document.swaggerObject,
 });
 
 const dynamicImport = new Function("specifier", "return import(specifier)");
@@ -65,14 +75,13 @@ app.addHook("onResponse", async (request, reply) => {
 });
 
 app.register(async (instance) => {
-instance.get("/", { schema: { tags: ["Outros"], description: "Consulta o status da API" } }, async (req, res) => {
-  return res.send({
-    service: "Api Play Panel",
-    status: "online",
-    date: new Intl.DateTimeFormat("pt-BR", { dateStyle: "full", timeStyle: "medium" }).format(new Date()),
+  instance.get("/", { schema: { tags: ["Outros"], security: [], description: "Consulta pública do status da API, sem credenciais" } }, async (req, res) => {
+    return res.send({
+      service: "Api Play Panel",
+      status: "online",
+      date: new Intl.DateTimeFormat("pt-BR", { dateStyle: "full", timeStyle: "medium" }).format(new Date()),
+    });
   });
-});
-
 });
 
 // Rotas de clientes
