@@ -16,7 +16,7 @@ export const playpanelResellerRoutes: FastifyPluginAsyncZod = async (app) => {
     "/find",
     {
       schema: {
-        tags: ["Play Panel - Revendedores"],
+        tags: ["playpanelReseller"],
         description: "Localiza um revendedor por ID ou username",
         querystring: queryFindResellerSchema,
       },
@@ -29,7 +29,7 @@ export const playpanelResellerRoutes: FastifyPluginAsyncZod = async (app) => {
     "/findAll",
     {
       schema: {
-        tags: ["Play Panel - Revendedores"],
+        tags: ["playpanelReseller"],
         description: "Lista todos os revendedores cadastrados sob a conta master",
         querystring: queryFindAllResellerSchema,
       },
@@ -43,7 +43,7 @@ export const playpanelResellerRoutes: FastifyPluginAsyncZod = async (app) => {
     "/findByMaster",
     {
       schema: {
-        tags: ["Play Panel - Revendedores"],
+        tags: ["playpanelReseller"],
         description: "Consulta revendedores vinculados a uma conta master específica",
         querystring: queryFindByMasterSchema,
       },
@@ -58,7 +58,7 @@ export const playpanelResellerRoutes: FastifyPluginAsyncZod = async (app) => {
     "/updateCredits",
     {
       schema: {
-        tags: ["Play Panel - Revendedores"],
+        tags: ["playpanelReseller"],
         description: "Adiciona créditos a um revendedor via POST com trava anti-duplicidade",
         querystring: queryUpdateResellerCreditsSchema,
       },

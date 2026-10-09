@@ -29,6 +29,7 @@ app.register(cors, {
 
 app.register(FastifySwagger, {
   openapi: {
+    tags: [{ name: "playpanel" }, { name: "playpanelReseller" }, { name: "Outros" }],
     info: {
       title: "Api Play Panel",
       description: "API de automação e integração completa para o servidor Play Panel",
@@ -63,7 +64,7 @@ app.addHook("onResponse", async (request, reply) => {
   );
 });
 
-app.get("/", async (req, res) => {
+app.get("/", { schema: { tags: ["Outros"], description: "Consulta o status da API" } }, async (req, res) => {
   return res.send({
     service: "Api Play Panel",
     status: "online",

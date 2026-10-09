@@ -24,7 +24,7 @@ export const playpanelRoutes: FastifyPluginAsyncZod = async (app) => {
     "/login",
     {
       schema: {
-        tags: ["Play Panel - Autenticação"],
+        tags: ["Outros"],
         description: "Executa login e retorno do token com validação de captcha",
         querystring: queryAuthLoginSchema,
       },
@@ -37,7 +37,7 @@ export const playpanelRoutes: FastifyPluginAsyncZod = async (app) => {
     "/stats",
     {
       schema: {
-        tags: ["Play Panel - Painel"],
+        tags: ["Outros"],
         description: "Consulta estatísticas da conta e créditos",
         querystring: queryStatsSchema,
       },
@@ -50,7 +50,7 @@ export const playpanelRoutes: FastifyPluginAsyncZod = async (app) => {
     "/find",
     {
       schema: {
-        tags: ["Play Panel - Clientes"],
+        tags: ["playpanel"],
         description: "Localiza apenas clientes oficiais por nome de usuário. Contas de teste não são retornadas.",
         querystring: queryFindSchema,
       },
@@ -63,7 +63,7 @@ export const playpanelRoutes: FastifyPluginAsyncZod = async (app) => {
     "/find-all",
     {
       schema: {
-        tags: ["Play Panel - Clientes"],
+        tags: ["playpanel"],
         description: "Lista todos os clientes ou testes com opções de filtros de status.",
         querystring: queryFindAllSchema,
       },
@@ -72,12 +72,25 @@ export const playpanelRoutes: FastifyPluginAsyncZod = async (app) => {
   );
 
 
+  // 7. Renovação
+  app.get(
+    "/renew",
+    {
+      schema: {
+        tags: ["playpanel"],
+        description: "Renova o acesso de um cliente por ID ou por nome de usuário com proteção anti-duplicidade.",
+        querystring: queryRenewSchema,
+      },
+    },
+    playpanelController.renewUser
+  );
+
   // 5. Pacotes / Bouquets
   app.get(
     "/pacotes",
     {
       schema: {
-        tags: ["Play Panel - Planos"],
+        tags: ["playpanel"],
         description: "Lista todos os pacotes / bouquets disponíveis para criação de testes e clientes.",
         querystring: queryPackageSchema,
       },
@@ -90,7 +103,7 @@ export const playpanelRoutes: FastifyPluginAsyncZod = async (app) => {
     "/create-test-user",
     {
       schema: {
-        tags: ["Play Panel - Testes"],
+        tags: ["playpanel"],
         description: "Cria um teste rápido com usuário/senha automáticos ou customizados e retorna os links completos de reprodução.",
         querystring: queryCreateTestUserSchema,
       },
@@ -98,25 +111,12 @@ export const playpanelRoutes: FastifyPluginAsyncZod = async (app) => {
     playpanelController.createTestUser
   );
 
-  // 7. Renovação
-  app.get(
-    "/renew",
-    {
-      schema: {
-        tags: ["Play Panel - Renovações"],
-        description: "Renova o acesso de um cliente por ID ou por nome de usuário com proteção anti-duplicidade.",
-        querystring: queryRenewSchema,
-      },
-    },
-    playpanelController.renewUser
-  );
-
   // 8. Bloquear / Desbloquear Cliente
   app.get(
     "/toggle-status",
     {
       schema: {
-        tags: ["Play Panel - Gerenciamento"],
+        tags: ["Outros"],
         description: "Alterna o status de bloqueio/desbloqueio de um cliente por ID ou username.",
         querystring: queryToggleStatusSchema,
       },
@@ -129,7 +129,7 @@ export const playpanelRoutes: FastifyPluginAsyncZod = async (app) => {
     "/delete",
     {
       schema: {
-        tags: ["Play Panel - Gerenciamento"],
+        tags: ["Outros"],
         description: "Deleta um cliente por ID ou username.",
         querystring: queryDeleteUserSchema,
       },
@@ -142,7 +142,7 @@ export const playpanelRoutes: FastifyPluginAsyncZod = async (app) => {
     "/delete-expired",
     {
       schema: {
-        tags: ["Play Panel - Gerenciamento"],
+        tags: ["Outros"],
         description: "Remove listas ou testes expirados em lote.",
         querystring: queryDeleteExpiredSchema,
       },
@@ -155,7 +155,7 @@ export const playpanelRoutes: FastifyPluginAsyncZod = async (app) => {
     "/logs/creditos",
     {
       schema: {
-        tags: ["Play Panel - Relatórios"],
+        tags: ["Outros"],
         description: "Consulta o histórico e movimentação de créditos.",
         querystring: queryCreditLogsSchema,
       },
@@ -168,7 +168,7 @@ export const playpanelRoutes: FastifyPluginAsyncZod = async (app) => {
     "/alterar-senha",
     {
       schema: {
-        tags: ["Play Panel - Segurança"],
+        tags: ["Outros"],
         description: "Altera a senha de acesso da conta do painel.",
         querystring: queryChangePasswordSchema,
       },

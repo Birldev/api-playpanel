@@ -63,6 +63,14 @@ Se as credenciais estiverem em outro nó, ajuste as expressões para referenciar
 
 As credenciais são obrigatórias inclusive quando existe uma sessão em cache. Isso não implica novo login no painel em toda requisição: sessões válidas podem ser reutilizadas.
 
+## Organização no Reference
+
+Os endpoints aparecem em três grupos, nesta ordem:
+
+- `playpanel`: `/find`, `/find-all`, `/renew`, `/pacotes` e `/create-test-user`, sob o prefixo `/playpanel`.
+- `playpanelReseller`: todas as operações sob `/playpanelreseller`.
+- `Outros`: status da API (`/`), login, estatísticas, bloqueio, exclusão, limpeza de expirados, extrato de créditos e alteração de senha.
+
 ## Rotas de clientes e administração
 
 Todas as rotas abaixo usam exclusivamente o prefixo `/playpanel`. Por exemplo: `/playpanel/find` e `/playpanel/pacotes`. Os caminhos sem prefixo não estão disponíveis.
