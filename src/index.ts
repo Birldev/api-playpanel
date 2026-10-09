@@ -64,12 +64,15 @@ app.addHook("onResponse", async (request, reply) => {
   );
 });
 
-app.get("/", { schema: { tags: ["Outros"], description: "Consulta o status da API" } }, async (req, res) => {
+app.register(async (instance) => {
+instance.get("/", { schema: { tags: ["Outros"], description: "Consulta o status da API" } }, async (req, res) => {
   return res.send({
     service: "Api Play Panel",
     status: "online",
     date: new Intl.DateTimeFormat("pt-BR", { dateStyle: "full", timeStyle: "medium" }).format(new Date()),
   });
+});
+
 });
 
 // Rotas de clientes
