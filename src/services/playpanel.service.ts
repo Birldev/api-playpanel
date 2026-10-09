@@ -156,9 +156,16 @@ export class PlayPanelService {
   }
 
   /**
-   * Busca um usuário específico pelo nome de usuário
+   * Localiza apenas clientes oficiais pelo nome de usuário.
    */
-  async findUser(props: FindUserProps): Promise<{
+  async findUser(props: FindUserProps) {
+    return this.lookupUser(props, false);
+  }
+
+  /**
+   * Busca interna para operações de gerenciamento, incluindo testes quando permitido.
+   */
+  private async lookupUser(props: FindUserProps, includeTrials = true): Promise<{
     success: boolean;
     data?: PlayPanelFormattedUser;
     message?: string;
@@ -186,7 +193,7 @@ export class PlayPanelService {
       },
     });
 
-    let found = result?.data?.find((u) => u.username.toLowerCase() === cleanUser);
+    let found = result?.data?.find((u) => u.username.toLowerCase() === cleanUser && (includeTrials || String(u.is_trial) === "0"));
 
     // 2. Se não encontrar nas próprias listas, busca em todas as listas
     if (!found) {
@@ -203,7 +210,7 @@ export class PlayPanelService {
           X_FILTRO: "todas",
         },
       });
-      found = allResult?.data?.find((u) => u.username.toLowerCase() === cleanUser);
+      found = allResult?.data?.find((u) => u.username.toLowerCase() === cleanUser && (includeTrials || String(u.is_trial) === "0"));
     }
 
     if (!found) {
@@ -421,7 +428,7 @@ export class PlayPanelService {
 
     // Se o ID não foi informado mas o username foi, localiza o ID do usuário
     if (!userId && props.username) {
-      const search = await this.findUser({ panelUser, panelPass, username: props.username });
+      const search = await this.lookupUser({ panelUser, panelPass, username: props.username });
       if (search.success && search.data) {
         userId = search.data.id;
       } else {
@@ -479,7 +486,7 @@ export class PlayPanelService {
       // Busca dados atualizados do usuário após a renovação
       let updatedData: PlayPanelFormattedUser | undefined;
       if (props.username) {
-        const search = await this.findUser({ panelUser, panelPass, username: props.username });
+        const search = await this.lookupUser({ panelUser, panelPass, username: props.username });
         if (search.success) updatedData = search.data;
       }
 
@@ -529,7 +536,7 @@ export class PlayPanelService {
     let userId = props.id;
 
     if (!userId && props.username) {
-      const search = await this.findUser({ panelUser, panelPass, username: props.username });
+      const search = await this.lookupUser({ panelUser, panelPass, username: props.username });
       if (search.success && search.data) {
         userId = search.data.id;
       } else {
@@ -574,7 +581,7 @@ export class PlayPanelService {
     let userId = props.id;
 
     if (!userId && props.username) {
-      const search = await this.findUser({ panelUser, panelPass, username: props.username });
+      const search = await this.lookupUser({ panelUser, panelPass, username: props.username });
       if (search.success && search.data) {
         userId = search.data.id;
       } else {

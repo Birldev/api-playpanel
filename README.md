@@ -73,7 +73,7 @@ Todas exigem `panelUser`, `panelPass` e API key. Os parâmetros adicionais tamb�
 | --- | --- | --- | --- |
 | `/login` | GET | `forceNewLogin` opcional | Retorna token e dados da sessão; `true` força novo login |
 | `/stats` | GET | Nenhum | Encaminha a resposta de estatísticas do painel |
-| `/find` | GET | `username` obrigatório | Busca um cliente pelo nome de usuário |
+| `/find` | GET | `username` obrigatório | Busca um cliente oficial pelo nome de usuário; não retorna testes |
 | `/find-all`, `/findAll` | GET | `teste`, `filtro`, `tipo`, `cooldown` opcionais | Lista clientes com filtros |
 | `/pacotes` | GET | Nenhum | Retorna bouquets como objetos com `id` e `name` |
 | `/create-test-user` | GET | `plano`, `horas`, `username`, `password` opcionais | Cria um teste |
@@ -92,7 +92,7 @@ Na resposta de sucesso, os dados são expostos na raiz e em `data.result`, inclu
 
 ### Consulta e listagem
 
-`/find` retorna o cliente em `data` ou HTTP 404 quando não localizado. Datas formatadas incluem `exp_date_local` no formato `DD/MM/YYYY`; não há campo `vencimento` criado por este serviço. `master_username` deriva de `member_id` e `as_number` é uma string vazia.
+`/find` retorna apenas clientes oficiais (`is_trial=0`) em `data`. Contas de teste (`is_trial=1`) não são retornadas; se somente um teste corresponder ao username, a resposta é HTTP 404. Datas formatadas incluem `exp_date_local` no formato `DD/MM/YYYY`; não há campo `vencimento` criado por este serviço. `master_username` deriva de `member_id` e `as_number` é uma string vazia.
 
 Em `/find-all`, `filtro` aceita `todas` (padrão), `ativa` ou `expirada`. `tipo` aceita `minhas` (padrão), `revendas` ou `todas`. `teste=true` seleciona testes, `teste=false` seleciona clientes oficiais, e a ausência desse parâmetro não filtra por teste. `cooldown` tem padrão de 15 segundos. A resposta contém `total` e `data`.
 

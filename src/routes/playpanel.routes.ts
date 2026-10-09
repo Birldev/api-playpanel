@@ -51,7 +51,7 @@ export const playpanelRoutes: FastifyPluginAsyncZod = async (app) => {
     {
       schema: {
         tags: ["Play Panel - Clientes"],
-        description: "Localiza um cliente específico por nome de usuário e retorna seus dados com datas formatadas e links de acesso.",
+        description: "Localiza apenas clientes oficiais por nome de usuário. Contas de teste não são retornadas.",
         querystring: queryFindSchema,
       },
     },
