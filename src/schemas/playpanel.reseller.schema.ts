@@ -1,37 +1,29 @@
 import { z } from "zod";
-
-const panelCredentialsSchema = z.object({
-  apikey: z.string().optional().describe("Chave de autenticação da API"),
-  panelUser: z.string().min(1, "Usuário do painel é obrigatório").describe("Usuário do painel Play Panel recebido na chamada"),
-  panelPass: z.string().min(1, "Senha do painel é obrigatória").describe("Senha do painel Play Panel recebida na chamada"),
-  panelUrl: z.string().optional().describe("URL opcional do painel para compatibilidade"),
-});
+import { panelCredentialsSchema, panelIdSchema, paginationStartSchema, paginationLengthSchema } from "./shared.schema";
 
 export const queryFindResellerSchema = z.object({
   ...panelCredentialsSchema.shape,
-  search: z.string().min(1, "Termo de busca ou usuário do revendedor é obrigatório"),
-});
+  search: z.string().min(1, "Informe ID, username ou e-mail do revendedor"),
+}).strict();
 
 export const queryFindAllResellerSchema = z.object({
   ...panelCredentialsSchema.shape,
-  start: z.coerce.number().optional().default(0).describe("Índice inicial para paginação"),
-  length: z.coerce.number().optional().default(100).describe("Quantidade de registros por página"),
-});
+  start: paginationStartSchema.describe("Índice inicial para paginação"),
+  length: paginationLengthSchema.default(100).describe("Quantidade de registros por página"),
+}).strict();
 
 export const queryFindByMasterSchema = z.object({
   ...panelCredentialsSchema.shape,
-  masterId: z.string().optional().describe("ID do master para consulta de hierarquia"),
-  search: z.string().optional().describe("Termo de busca opcional"),
-});
+  masterId: panelIdSchema.optional().describe("ID do master no Play Panel"),
+  search: z.string().min(1).optional().describe("Termo de busca opcional"),
+}).strict();
 
 export const queryUpdateResellerCreditsSchema = z.object({
   ...panelCredentialsSchema.shape,
-  idcentral: z.string().optional().describe("ID do revendedor no painel (compatibilidade com Central)"),
-  id: z.string().optional().describe("ID do revendedor no painel"),
-  creditos: z.string().optional().describe("Quantidade de créditos a adicionar (compatibilidade com Central)"),
-  amount: z.string().optional().describe("Quantidade de créditos a adicionar"),
-  reason: z.string().optional().default("Recarga de créditos via API").describe("Motivo ou observação da recarga"),
-});
+  id: panelIdSchema.describe("ID do revendedor no Play Panel"),
+  amount: z.coerce.number().finite().positive().describe("Quantidade positiva de créditos a adicionar"),
+  reason: z.string().min(1).default("Recarga de créditos via API").describe("Motivo da recarga"),
+}).strict();
 
 export type QueryFindResellerInput = z.infer<typeof queryFindResellerSchema>;
 export type QueryFindAllResellerInput = z.infer<typeof queryFindAllResellerSchema>;

@@ -62,7 +62,7 @@ export const playpanelResellerRoutes: FastifyPluginAsyncZod = async (app) => {
     playpanelResellerController.findResellerByMaster
   );
 
-  // 4. Adicionar créditos ao revendedor (Disponível em GET conforme especificação do projeto)
+  // 4. Adicionar créditos ao revendedor
   app.get(
     "/updateCredits",
     {
@@ -75,7 +75,7 @@ export const playpanelResellerRoutes: FastifyPluginAsyncZod = async (app) => {
     playpanelResellerController.updateResellerCredits
   );
 
-  // Alias em POST para compatibilidade reversa com workflows legados do Central
+  // Recarga de créditos via POST; parâmetros enviados na query string
   app.post(
     "/updateCredits",
     {

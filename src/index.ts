@@ -71,14 +71,12 @@ app.get("/", async (req, res) => {
   });
 });
 
-// Suporte para rotas diretas na raiz, prefixadas com /playpanel e com /central
+// Rotas de clientes na raiz e com o prefixo /playpanel
 app.register(playpanelRoutes);
 app.register(playpanelRoutes, { prefix: "/playpanel" });
-app.register(playpanelRoutes, { prefix: "/central" });
 
 // Rotas do sistema de revenda (reseller)
 app.register(playpanelResellerRoutes, { prefix: "/reseller" });
-app.register(playpanelResellerRoutes, { prefix: "/centralreseller" });
 app.register(playpanelResellerRoutes, { prefix: "/playpanel/reseller" });
 
 app.setErrorHandler((error, request, reply) => {

@@ -65,7 +65,7 @@ As credenciais são obrigatórias inclusive quando existe uma sessão em cache. 
 
 ## Rotas de clientes e administração
 
-As rotas abaixo estão disponíveis na raiz, com `/playpanel` e com `/central`. Por exemplo: `/find`, `/playpanel/find` e `/central/find`.
+As rotas abaixo estão disponíveis na raiz e com `/playpanel`. Por exemplo: `/find` e `/playpanel/find`.
 
 Todas exigem `panelUser`, `panelPass` e API key. Os parâmetros adicionais também são enviados na query string.
 
@@ -77,7 +77,7 @@ Todas exigem `panelUser`, `panelPass` e API key. Os parâmetros adicionais tamb�
 | `/find-all`, `/findAll` | GET | `teste`, `filtro`, `tipo`, `cooldown` opcionais | Lista clientes com filtros |
 | `/pacotes` | GET | Nenhum | Retorna bouquets como objetos com `id` e `name` |
 | `/create-test-user` | GET | `plano`, `horas`, `username`, `password` opcionais | Cria um teste |
-| `/renew` | GET | `id`, `idcentral` ou `username`; `months`, `force`, `cooldown` opcionais | Renova um cliente |
+| `/renew` | GET | `id` ou `username`; `months`, `force`, `cooldown` opcionais | Renova um cliente |
 | `/toggle-status` | GET | `id` ou `username` | Alterna bloqueio/desbloqueio |
 | `/delete` | GET | `id` ou `username` | Exclui um cliente |
 | `/delete-expired` | GET | `testes`, `tipo` opcionais | Exclui expirados em lote |
@@ -100,39 +100,34 @@ A implementação solicita até 1.000 registros em uma única página. A listage
 
 ### Renovação
 
-Informe `id` ou `idcentral`, ou use `username` para localizar o ID. Se ID e username forem enviados juntos, o ID determina o alvo da renovação. `months` aceita valores entre 1 e 12, com padrão 1; o serviço envia `tempo` ao backend. `cooldown` aceita de 5 a 600 segundos, com padrão 60. `force=true` ignora as verificações da trava, inclusive a de operação em andamento.
+Informe `id`, ou use `username` para localizar o ID. Se ID e username forem enviados juntos, o ID determina o alvo da renovação. `months` aceita valores entre 1 e 12, com padrão 1; o serviço envia `tempo` ao backend. `cooldown` aceita de 5 a 600 segundos, com padrão 60. `force=true` ignora as verificações da trava, inclusive a de operação em andamento.
 
 O retorno de sucesso inclui `message` e pode incluir `data` com o cliente atualizado. Workflows que comparam vencimentos devem verificar a existência de `data` antes de acessá-lo.
 
 ## Revendedores
 
-Use os prefixos `/reseller`, `/centralreseller` ou `/playpanel/reseller`. Todas as rotas exigem as mesmas credenciais por chamada e API key.
+Use os prefixos `/reseller` ou `/playpanel/reseller`. Todas as rotas exigem as mesmas credenciais por chamada e API key.
 
 | Sufixo | Método | Parâmetros adicionais |
 | --- | --- | --- |
 | `/find` | GET | `search` obrigatório: ID, username ou e-mail |
 | `/findAll`, `/find-all` | GET | `start` padrão 0; `length` padrão 100 |
 | `/findByMaster` | GET | `masterId` e `search` opcionais |
-| `/updateCredits` | GET ou POST | `id` ou `idcentral`; `creditos` ou `amount`; `reason` opcional |
+| `/updateCredits` | GET ou POST | `id` e `amount` obrigatórios; `reason` opcional |
 
 Mesmo no POST de `/updateCredits`, os parâmetros são enviados na query string. A recarga utiliza cooldown de 60 segundos e pode retornar `Credits already inserted` quando bloqueada.
 
-`panelUrl` é aceito nos schemas de revendedores para compatibilidade, mas não muda o destino da chamada: o backend é definido por `PLAYPANEL_URL`.
+O backend é definido por `PLAYPANEL_URL`, sem seleção de destino por requisição.
 
 `/findByMaster` tenta a rota de hierarquia quando recebe `masterId`. Se essa chamada lançar erro, recorre à listagem de revendedores próprios e aplica `search`, quando presente. Esse fallback não filtra automaticamente por `masterId`.
 
-## Migração de workflows da Central
+## Contratos de entrada e resposta
 
-Os prefixos `/central` e `/centralreseller` facilitam a adaptação dos endereços, mas não garantem contratos ou regras de negócio idênticos. Esta API integra o Play Panel; não modifica nem encaminha chamadas para o projeto API Central.
+As requisições aceitam somente os parâmetros documentados. Parâmetros desconhecidos retornam HTTP 400. Use `id` para identificar clientes e revendedores; clientes também podem ser localizados por `username` nas operações de renovação, bloqueio e exclusão.
 
-Ao migrar, revise:
+Os IDs devem conter apenas dígitos. Paginação exige `start` inteiro não negativo e `length` inteiro entre 1 e 1.000. `horas` e `months` são inteiros nos intervalos documentados. `cooldown` da listagem aceita de 1 a 600 segundos. `amount` deve ser finito e maior que zero. Booleanos aceitam `true`, `false`, `1` e `0`.
 
-- O envio obrigatório de `panelUser` e `panelPass` em cada chamada.
-- A criação de testes por `plano` e `horas`. Os campos `tipo=iptv|p2p|hybrid` e `macAddr` da Central não são implementados na criação de testes desta API.
-- O filtro `teste`: omiti-lo não equivale a enviar `false`.
-- Os campos e níveis de resposta: clientes usam `data`; testes incluem `data.result`; alguns retornos de revendedores mantêm `sucess` além de `success`.
-- A renovação por `tempo`, sem o mapeamento de pacotes da Central.
-- O destino fixado pela configuração, mesmo quando um workflow envia `panelUrl`.
+Respostas usam `success` para indicar sucesso. Clientes ficam em `data`; testes incluem `data.result`. Campos opcionais de respostas dependem do backend.
 
 ## Sessões e limites dos controles atuais
 

@@ -69,9 +69,7 @@ export interface CreateTestUserProps extends BasePanelProps {
 }
 
 export interface RenewUserProps extends BasePanelProps {
-  id?: string;
-  idcentral?: string;
-  username?: string;
+  id?: string;  username?: string;
   months?: number;
   force?: boolean;
   cooldown?: number;
@@ -419,7 +417,7 @@ export class PlayPanelService {
     data?: PlayPanelFormattedUser;
   }> {
     const { panelUser, panelPass, months = 1 } = props;
-    let userId = props.id || props.idcentral;
+    let userId = props.id;
 
     // Se o ID não foi informado mas o username foi, localiza o ID do usuário
     if (!userId && props.username) {

@@ -46,11 +46,7 @@ export interface FindByMasterProps extends BaseResellerProps {
   search?: string;
 }
 
-export interface UpdateResellerCreditsProps extends BaseResellerProps {
-  idcentral?: string;
-  id?: string;
-  creditos?: string;
-  amount?: string;
+export interface UpdateResellerCreditsProps extends BaseResellerProps {  id: string;  amount: number;
   reason?: string;
 }
 
@@ -227,20 +223,20 @@ export class PlayPanelResellerService {
     credits?: number;
   }> {
     const { panelUser, panelPass, reason = "Recarga de créditos via API" } = props;
-    const resellerId = props.id || props.idcentral;
-    const creditsAmount = props.creditos || props.amount;
+    const resellerId = props.id;
+    const creditsAmount = props.amount;
 
     if (!resellerId) {
       return {
         success: false,
-        message: "ID do revendedor (id ou idcentral) é obrigatório.",
+        message: "ID do revendedor é obrigatório.",
       };
     }
 
-    if (!creditsAmount || isNaN(Number(creditsAmount))) {
+    if (!Number.isFinite(creditsAmount) || creditsAmount <= 0) {
       return {
         success: false,
-        message: "Quantidade de créditos (creditos ou amount) deve ser um número válido.",
+        message: "Quantidade de créditos (amount) deve ser um número finito e positivo.",
       };
     }
 

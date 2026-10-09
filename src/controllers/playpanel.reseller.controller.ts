@@ -25,17 +25,13 @@ export class PlayPanelResellerController {
 
     if (!result.success) {
       return res.status(404).send({
-        status: 404,
-        sucess: false,
-        success: false,
+        status: 404,        success: false,
         message: result.message || "User not found",
       });
     }
 
     return res.status(200).send({
-      status: 200,
-      sucess: true,
-      success: true,
+      status: 200,      success: true,
       data: result.data,
     });
   }
@@ -57,9 +53,7 @@ export class PlayPanelResellerController {
     });
 
     return res.status(200).send({
-      status: 200,
-      sucess: true,
-      success: true,
+      status: 200,      success: true,
       total: result.total,
       data: result.data,
     });
@@ -82,46 +76,37 @@ export class PlayPanelResellerController {
     });
 
     return res.status(200).send({
-      status: 200,
-      sucess: true,
-      success: true,
+      status: 200,      success: true,
       data: result.data,
     });
   }
 
   /**
-   * Adiciona créditos a um revendedor (compatível com Central via GET)
+   * Adiciona créditos a um revendedor no Play Panel
    */
   async updateResellerCredits(
     req: FastifyRequest<{ Querystring: QueryUpdateResellerCreditsInput }>,
     res: FastifyReply
   ) {
-    const { panelUser, panelPass, id, idcentral, creditos, amount, reason } = req.query;
+    const { panelUser, panelPass, id, amount, reason } = req.query;
 
     const result = await playpanelResellerService.updateResellerCredits({
       panelUser,
       panelPass,
-      id,
-      idcentral,
-      creditos,
-      amount,
+      id,      amount,
       reason,
     });
 
     if (!result.success) {
       const statusCode = result.message.includes("already") ? 400 : 404;
       return res.status(statusCode).send({
-        status: statusCode,
-        sucess: false,
-        success: false,
+        status: statusCode,        success: false,
         message: result.message,
       });
     }
 
     return res.status(200).send({
-      status: 200,
-      sucess: true,
-      success: true,
+      status: 200,      success: true,
       message: result.message,
       data: {
         credits: result.credits,

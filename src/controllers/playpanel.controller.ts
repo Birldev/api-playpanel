@@ -118,9 +118,7 @@ export class PlayPanelController {
     if (!result.success) {
       return res.status(400).send({
         status: 400,
-        user: false,
-        sucess: false,
-        success: false,
+        user: false,        success: false,
         message: result.message || "Find all already in progress",
       });
     }
@@ -193,9 +191,7 @@ export class PlayPanelController {
       exp_date_iso: result.exp_date_iso,
       exp_date_local: result.exp_date_local,
       message: result.message,
-      data: {
-        sucess: true,
-        success: true,
+      data: {        success: true,
         result: {
           id: result.id,
           username: result.username,
@@ -217,14 +213,12 @@ export class PlayPanelController {
     req: FastifyRequest<{ Querystring: QueryRenewInput }>,
     res: FastifyReply
   ) {
-    const { panelUser, panelPass, id, idcentral, username, months, force, cooldown } = req.query;
+    const { panelUser, panelPass, id, username, months, force, cooldown } = req.query;
 
     const result = await playpanelService.renewUser({
       panelUser,
       panelPass,
-      id: id || idcentral,
-      idcentral,
-      username,
+      id,      username,
       months,
       force: Boolean(force),
       cooldown,
@@ -233,9 +227,7 @@ export class PlayPanelController {
     if (!result.success) {
       return res.status(400).send({
         status: 400,
-        user: false,
-        sucess: false,
-        success: false,
+        user: false,        success: false,
         message: result.message || "Operação de renovação bloqueada por duplicidade.",
       });
     }
