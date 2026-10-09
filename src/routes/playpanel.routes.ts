@@ -71,17 +71,6 @@ export const playpanelRoutes: FastifyPluginAsyncZod = async (app) => {
     playpanelController.findAll
   );
 
-  app.get(
-    "/findAll",
-    {
-      schema: {
-        tags: ["Play Panel - Clientes"],
-        description: "Alias para /find-all - Lista todos os clientes ou testes.",
-        querystring: queryFindAllSchema,
-      },
-    },
-    playpanelController.findAll
-  );
 
   // 5. Pacotes / Bouquets
   app.get(

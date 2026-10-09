@@ -65,7 +65,7 @@ As credenciais são obrigatórias inclusive quando existe uma sessão em cache. 
 
 ## Rotas de clientes e administração
 
-As rotas abaixo estão disponíveis na raiz e com `/playpanel`. Por exemplo: `/find` e `/playpanel/find`.
+Todas as rotas abaixo usam exclusivamente o prefixo `/playpanel`. Por exemplo: `/playpanel/find` e `/playpanel/pacotes`. Os caminhos sem prefixo não estão disponíveis.
 
 Todas exigem `panelUser`, `panelPass` e API key. Os parâmetros adicionais também são enviados na query string.
 
@@ -74,7 +74,7 @@ Todas exigem `panelUser`, `panelPass` e API key. Os parâmetros adicionais tamb�
 | `/login` | GET | `forceNewLogin` opcional | Retorna token e dados da sessão; `true` força novo login |
 | `/stats` | GET | Nenhum | Encaminha a resposta de estatísticas do painel |
 | `/find` | GET | `username` obrigatório | Busca um cliente oficial pelo nome de usuário; não retorna testes |
-| `/find-all`, `/findAll` | GET | `teste`, `filtro`, `tipo`, `cooldown` opcionais | Lista clientes com filtros |
+| `/find-all` | GET | `teste`, `filtro`, `tipo`, `cooldown` opcionais | Lista clientes com filtros |
 | `/pacotes` | GET | Nenhum | Retorna bouquets como objetos com `id` e `name` |
 | `/create-test-user` | GET | `plano`, `horas`, `username`, `password` opcionais | Cria um teste |
 | `/renew` | GET | `id` ou `username`; `months`, `force`, `cooldown` opcionais | Renova um cliente |
@@ -106,16 +106,16 @@ O retorno de sucesso inclui `message` e pode incluir `data` com o cliente atuali
 
 ## Revendedores
 
-Use os prefixos `/reseller` ou `/playpanel/reseller`. Todas as rotas exigem as mesmas credenciais por chamada e API key.
+Use exclusivamente o prefixo `/playpanelreseller`, por exemplo `/playpanelreseller/find`. Todas as rotas exigem as mesmas credenciais por chamada e API key.
 
 | Sufixo | Método | Parâmetros adicionais |
 | --- | --- | --- |
 | `/find` | GET | `search` obrigatório: ID, username ou e-mail |
-| `/findAll`, `/find-all` | GET | `start` padrão 0; `length` padrão 100 |
+| `/findAll` | GET | `start` padrão 0; `length` padrão 100 |
 | `/findByMaster` | GET | `masterId` e `search` opcionais |
-| `/updateCredits` | GET ou POST | `id` e `amount` obrigatórios; `reason` opcional |
+| `/updateCredits` | POST | `id` e `amount` obrigatórios; `reason` opcional |
 
-Mesmo no POST de `/updateCredits`, os parâmetros são enviados na query string. A recarga utiliza cooldown de 60 segundos e pode retornar `Credits already inserted` quando bloqueada.
+No POST de `/playpanelreseller/updateCredits`, os parâmetros são enviados na query string. A recarga utiliza cooldown de 60 segundos e pode retornar `Credits already inserted` quando bloqueada.
 
 O backend é definido por `PLAYPANEL_URL`, sem seleção de destino por requisição.
 

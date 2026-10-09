@@ -71,13 +71,11 @@ app.get("/", async (req, res) => {
   });
 });
 
-// Rotas de clientes na raiz e com o prefixo /playpanel
-app.register(playpanelRoutes);
+// Rotas de clientes
 app.register(playpanelRoutes, { prefix: "/playpanel" });
 
 // Rotas do sistema de revenda (reseller)
-app.register(playpanelResellerRoutes, { prefix: "/reseller" });
-app.register(playpanelResellerRoutes, { prefix: "/playpanel/reseller" });
+app.register(playpanelResellerRoutes, { prefix: "/playpanelreseller" });
 
 app.setErrorHandler((error, request, reply) => {
   if (error.validation) {

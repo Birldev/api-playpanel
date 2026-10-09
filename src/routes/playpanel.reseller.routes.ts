@@ -37,17 +37,6 @@ export const playpanelResellerRoutes: FastifyPluginAsyncZod = async (app) => {
     playpanelResellerController.findAllReseller
   );
 
-  app.get(
-    "/find-all",
-    {
-      schema: {
-        tags: ["Play Panel - Revendedores"],
-        description: "Alias para /findAll - Lista todos os revendedores",
-        querystring: queryFindAllResellerSchema,
-      },
-    },
-    playpanelResellerController.findAllReseller
-  );
 
   // 3. Buscar por Master
   app.get(
@@ -63,17 +52,6 @@ export const playpanelResellerRoutes: FastifyPluginAsyncZod = async (app) => {
   );
 
   // 4. Adicionar créditos ao revendedor
-  app.get(
-    "/updateCredits",
-    {
-      schema: {
-        tags: ["Play Panel - Revendedores"],
-        description: "Adiciona ou recarrega créditos de um revendedor via GET com trava anti-duplicidade",
-        querystring: queryUpdateResellerCreditsSchema,
-      },
-    },
-    playpanelResellerController.updateResellerCredits
-  );
 
   // Recarga de créditos via POST; parâmetros enviados na query string
   app.post(
@@ -81,7 +59,7 @@ export const playpanelResellerRoutes: FastifyPluginAsyncZod = async (app) => {
     {
       schema: {
         tags: ["Play Panel - Revendedores"],
-        description: "Alias em POST para adicionar créditos a um revendedor",
+        description: "Adiciona créditos a um revendedor via POST com trava anti-duplicidade",
         querystring: queryUpdateResellerCreditsSchema,
       },
     },
