@@ -44,8 +44,8 @@ export interface PlayPanelFormattedUser {
 }
 
 export interface BasePanelProps {
-  panelUser?: string;
-  panelPass?: string;
+  panelUser: string;
+  panelPass: string;
 }
 
 export interface FindUserProps extends BasePanelProps {
@@ -231,7 +231,7 @@ export class PlayPanelService {
     message?: string;
   }> {
     const { panelUser, panelPass, teste, filtro = "todas", tipo = "minhas", cooldown = 15 } = props;
-    const effectiveUser = panelUser || "default";
+    const effectiveUser = panelUser;
 
     // Defesa anti-hammering: evita múltiplas listagens pesadas simultâneas
     const lockCheck = await FindAllLock.checkAndLock({
@@ -293,7 +293,7 @@ export class PlayPanelService {
   /**
    * Consulta os pacotes / bouquets disponíveis para criação e renovação
    */
-  async getPackages(props: GetPackagesProps = {}): Promise<{
+  async getPackages(props: GetPackagesProps): Promise<{
     success: boolean;
     data: Array<{ id: string; name: string }>;
   }> {

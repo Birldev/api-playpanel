@@ -2,8 +2,8 @@ import { z } from "zod";
 
 const panelCredentialsSchema = z.object({
   apikey: z.string().optional().describe("Chave de autenticação da API"),
-  panelUser: z.string().optional().describe("Usuário do painel Play Panel (opcional se padrão configurado)"),
-  panelPass: z.string().optional().describe("Senha do painel Play Panel (opcional se padrão configurado)"),
+  panelUser: z.string().min(1, "Usuário do painel é obrigatório").describe("Usuário do painel Play Panel recebido na chamada"),
+  panelPass: z.string().min(1, "Senha do painel é obrigatória").describe("Senha do painel Play Panel recebida na chamada"),
 });
 
 export const queryAuthLoginSchema = z.object({

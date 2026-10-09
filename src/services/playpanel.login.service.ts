@@ -15,8 +15,8 @@ export interface PlayPanelSessionData {
 }
 
 export interface LoginProps {
-  panelUser?: string;
-  panelPass?: string;
+  panelUser: string;
+  panelPass: string;
   forceNewLogin?: boolean;
 }
 
@@ -124,14 +124,16 @@ export class PlayPanelLoginService {
   /**
    * Executa o login no painel Play Panel com resolução automatizada de captcha
    */
-  async login(props: LoginProps = {}): Promise<{
+  async login(props: LoginProps): Promise<{
     success: boolean;
     token?: string;
     userData?: any;
     message: string;
   }> {
-    const panelUser = props.panelUser || envParsed.DEFAULT_PLAYPANEL_USER;
-    const panelPass = props.panelPass || envParsed.DEFAULT_PLAYPANEL_PASS;
+    const { panelUser, panelPass } = props;
+    if (!panelUser || !panelPass) {
+      return { success: false, message: "panelUser e panelPass são obrigatórios em cada chamada." };
+    }
     const forceNewLogin = props.forceNewLogin || false;
     const cacheKey = this.getCacheKey(panelUser, panelPass);
 

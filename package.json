@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc -b",
+    "test": "npm run build && node tests/credentials.cjs",
     "start": "node ./dist/index.js",
     "start:dev": "tsx src/index.ts"
   },

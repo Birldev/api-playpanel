@@ -28,8 +28,8 @@ export interface PlayPanelFormattedReseller {
 }
 
 export interface BaseResellerProps {
-  panelUser?: string;
-  panelPass?: string;
+  panelUser: string;
+  panelPass: string;
 }
 
 export interface FindResellerProps extends BaseResellerProps {
@@ -134,7 +134,7 @@ export class PlayPanelResellerService {
   /**
    * Lista todos os revendedores da conta com paginação
    */
-  async findAllReseller(props: FindAllResellerProps = {}): Promise<{
+  async findAllReseller(props: FindAllResellerProps): Promise<{
     success: boolean;
     total: number;
     data: PlayPanelFormattedReseller[];
@@ -170,7 +170,7 @@ export class PlayPanelResellerService {
   /**
    * Lista revendedores por hierarquia ou master
    */
-  async findResellerByMaster(props: FindByMasterProps = {}): Promise<{
+  async findResellerByMaster(props: FindByMasterProps): Promise<{
     success: boolean;
     data: PlayPanelFormattedReseller[];
     message?: string;

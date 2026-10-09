@@ -3,8 +3,8 @@ import { logger } from "../utils/logger";
 import { playpanelLoginService } from "./playpanel.login.service";
 
 export interface FetchOptions extends RequestInit {
-  panelUser?: string;
-  panelPass?: string;
+  panelUser: string;
+  panelPass: string;
   queryParams?: Record<string, string | number | boolean | undefined>;
 }
 
@@ -12,10 +12,10 @@ export class PlayPanelFetchService {
   /**
    * Realiza requisições HTTP autenticadas para o servidor Play Panel com auto-healing defensivo
    */
-  async request<T = any>(endpoint: string, options: FetchOptions = {}): Promise<T> {
+  async request<T = any>(endpoint: string, options: FetchOptions): Promise<T> {
     const {
-      panelUser = envParsed.DEFAULT_PLAYPANEL_USER,
-      panelPass = envParsed.DEFAULT_PLAYPANEL_PASS,
+      panelUser,
+      panelPass,
       queryParams,
       ...fetchOptions
     } = options;
@@ -110,11 +110,11 @@ export class PlayPanelFetchService {
     return data as T;
   }
 
-  async get<T = any>(endpoint: string, options: FetchOptions = {}): Promise<T> {
+  async get<T = any>(endpoint: string, options: FetchOptions): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: "GET" });
   }
 
-  async post<T = any>(endpoint: string, body?: any, options: FetchOptions = {}): Promise<T> {
+  async post<T = any>(endpoint: string, body: any, options: FetchOptions): Promise<T> {
     const isFormData = body instanceof URLSearchParams;
     const headers: Record<string, string> = {};
 
